@@ -35,10 +35,10 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import axios from 'axios';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
+import router from '@/router';
 
 const email = ref('');
 const password = ref('');

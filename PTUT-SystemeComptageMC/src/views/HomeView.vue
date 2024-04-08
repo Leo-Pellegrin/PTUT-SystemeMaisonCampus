@@ -78,9 +78,9 @@
 
 
 <script setup>
-import router from '@/router';
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onUnmounted } from 'vue';
+import router from '@/router';
 
 const BarChartOptions = {
   chart: {
@@ -230,12 +230,23 @@ const occupationSalles = ref(0);
 
 const TimeRange = [{ start: '08:00', end: '09:00' }, { start: '09:00', end: '10:00' }, { start: '10:00', end: '11:00' }, { start: '11:00', end: '12:00' }, { start: '12:00', end: '13:00' }, { start: '13:00', end: '14:00' }, { start: '14:00', end: '15:00' }, { start: '15:00', end: '16:00' }, { start: '16:00', end: '17:00' }, { start: '17:00', end: '18:00' }, { start: '18:00', end: '19:00' }, { start: '19:00', end: '20:00' }]
 
+const interval = ref(null);
+
 onMounted(() => {
-  if (localStorage.getItem("token")) {
+  if (localStorage.getItem("token") && localStorage.getItem("idetab")) {
     getDataFromApi();
+    interval.value = setInterval(getDataFromApi, 60000);
   }
   else {
     router.push({ path: '/' })
+  }
+})
+
+
+onUnmounted(() => {
+  if (interval.value) {
+    console.log("clear timeout")
+    clearInterval(interval.value);
   }
 })
 
@@ -260,14 +271,41 @@ async function getDataFromApi() {
 
   let idetab = localStorage.getItem("idetab");
 
+  AvgPresencechartData.value = [{
+    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    backgroundColor: '#0F2C59',
+    name: 'Occupation'
+  }]
+
+  AvgPresence.value = [{
+    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    backgroundColor: '#265073',
+    name: 'Occupation globale'
+  },
+  {
+    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    backgroundColor: '#2D9596',
+    name: 'Occupation bibliothèque'
+  },
+  {
+    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    backgroundColor: '#9AD0C2',
+    name: 'Occupation salles de travail'
+  }]
+
+  occupationGlobale.value = 0;
+  occupationBibliotheque.value = 0;
+  occupationSalles.value = 0;
+
   await axios
-    .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/'+idetab+'/passage/periode?dateDebut=' + firstHourFormatted + '&dateFin=' + lastHourFormatted, {
+    .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/' + idetab + '/passage/periode?dateDebut=' + firstHourFormatted + '&dateFin=' + lastHourFormatted, {
       headers: {
         Authorization: localStorage.getItem('token')
       }
     })
     .then((response) => {
       const dataByRoom = {};
+
       response.data.forEach((passage) => {
         const room = passage.nomsalle;
         const date = new Date(passage.datepassage);
@@ -321,9 +359,11 @@ async function getDataFromApi() {
       console.log(AvgPresencechartData.value[0].data)
     })
     .catch((error) => {
-      if (error.response.status == 403) {
+      if (error.response && error.response.status === 403) {
         localStorage.clear();
-        router.push({ path: '/' })
+        router.push({ path: '/' });
+      } else {
+        console.log("Error:", error);
       }
     });
 }

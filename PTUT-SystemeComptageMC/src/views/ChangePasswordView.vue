@@ -35,12 +35,11 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import axios from 'axios';
 import { onMounted, ref } from 'vue'
+import router from '@/router';
 
 onMounted(() => {
-    console.log(localStorage.getItem("oldpassword"))
     oldpassword.value = localStorage.getItem("oldpassword")
 })
 

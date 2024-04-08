@@ -56,10 +56,9 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import axios from 'axios';
 import { onMounted, ref } from 'vue'
-
+import router from '@/router';
 
 const email = ref('')
 const Role = ref('')
@@ -73,8 +72,13 @@ const alerterror = ref(false)
 const alertsuccess = ref(false)
 
 onMounted(() => {
-    getProfileData();
-    getAllEtabs();
+    if(localStorage.getItem("token") && localStorage.getItem("idetab")){
+        getProfileData();
+        getAllEtabs();
+    }
+    else{
+        router.push({ path: '/' });
+    }
 })
 
 async function getAllEtabs() {
@@ -91,9 +95,11 @@ async function getAllEtabs() {
         listeEtabs.value.push(admin)
     })
         .catch((error) => {
-            if (error.response.status == 403) {
+            if (error.response && error.response.status === 403) {
                 localStorage.clear();
-                router.push({ path: '/' })
+                router.push({ path: '/' });
+            } else {
+                console.log("Error:", error);
             }
         })
 
@@ -117,9 +123,11 @@ async function getProfileData() {
             etablissement.value = response.data[0].nometab
         })
             .catch((error) => {
-                if (error.response.status == 403) {
+                if (error.response && error.response.status === 403) {
                     localStorage.clear();
-                    router.push({ path: '/' })
+                    router.push({ path: '/' });
+                } else {
+                    console.log("Error:", error);
                 }
             })
     }
@@ -131,13 +139,13 @@ async function submit() {
     console.log(emailnewAccount.value)
     let useretab;
     console.log(etabSelected.value)
-    if (etabSelected.value.id !== "admin"){
+    if (etabSelected.value.id !== "admin") {
         useretab = listeEtabs.value.find(element => element.name === etabSelected.value.name)
     }
     else {
         useretab = etabSelected.value
     }
-        
+
     axios.post('https://ptut-ptutcomptagemaisoncampus.koyeb.app/user/register', {
         username: emailnewAccount.value,
         role: useretab.id

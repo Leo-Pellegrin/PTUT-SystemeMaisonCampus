@@ -5,7 +5,7 @@
         <p class="text-h4" v-on:click="$router.push({ path: '/' })">MC Count</p>
       </v-app-bar-title>
       <v-select v-if="connected" class="mt-5" v-model="selected" :disabled="!isAdmin" :items="items" item-title="name"
-        item-value="id" label="Choisir l'établissement'" @update:model-value="changeBuilding" return-object></v-select>
+        item-value="id" label="Choisir l'établissement" @update:model-value="changeBuilding" return-object></v-select>
 
       <v-spacer></v-spacer>
 
@@ -26,7 +26,6 @@
 </template>
 
 <script setup>
-import router from '@/router';
 import { onMounted, ref, computed } from 'vue';
 import axios from 'axios';
 
@@ -57,13 +56,13 @@ async function getAllsBatiments() {
 
 function logout() {
   localStorage.clear();
-  router.push({ path: '/' })
+  window.location.reload();
 }
 
 function changeBuilding() {
   console.log("selected", selected.value)
   localStorage.setItem("idetab", selected.value.id);
-  window.location.reload();
+  if (typeof window !== 'undefined' && window.location) window.location.reload();
 }
 
 const isAdmin = computed(() => {
