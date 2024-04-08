@@ -13,7 +13,7 @@
                                 :type="show1 ? 'text' : 'password'" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                                 @click:append="show1 = !show1"></v-text-field>
                             <a href="" @click.prevent="forgotPassword()">Mot de passe oublié ?</a>
-                            <v-alert class="ma-5" v-model="alert" color="error" icon="$error"
+                            <v-alert class="ma-5" v-model="alertEmail" color="error" icon="$error"
                                 title="Veuillez renseigner votre email" closable></v-alert>
 
                             <div class="d-flex justify-center">
@@ -22,6 +22,10 @@
                             <v-alert class="ma-5" v-model="alertsuccess" color="success" icon="$success"
                                 title="Un email vous a été envoyé pour réinitialiser votre mot de passe"
                                 closable></v-alert>
+                            <v-alert class="ma-5" v-model="alertEmailReset" color="error" icon="$error"
+                                title="Un problème est servenu" closable></v-alert>
+                            <v-alert class="ma-5" v-model="alertLogin" color="error" icon="$error"
+                                title="Un problème est servenu lors de la connexion" closable></v-alert>
                         </v-form>
                     </v-card-text>
                 </v-card>
@@ -39,8 +43,11 @@ import { ref } from 'vue';
 const email = ref('');
 const password = ref('');
 
-const alert = ref(false);
+const alertEmail = ref(false);
 const alertsuccess = ref(false);
+
+const alertEmailReset = ref(false);
+const alertLogin = ref(false);
 
 const show1 = ref(false);
 
@@ -73,28 +80,35 @@ async function submit(event) {
             localStorage.setItem("token", response.data.token)
             router.push({ path: '/home' })
         }
-        else {
-            console.log("Erreur de connexion")
-        }
-    }).catch((error) => {
-        console.log(error);
+    }).catch(() => {
+        alertLogin.value = true;
+        setTimeout(() => {
+            alertLogin.value = false;
+        }, 5000);
     });
 }
 
 async function forgotPassword() {
     if (email.value === '') {
-        alert.value = true;
+        alertEmail.value = true;
         setTimeout(() => {
-            alert.value = false;
+            alertEmail.value = false;
         }, 5000);
     } else {
-        axios.post('https://ptut-ptutcomptagemaisoncampus.koyeb.app/user/forgotpassword', {
-            email: email.value
+        console.log(email.value)
+        axios.post('https://ptut-ptutcomptagemaisoncampus.koyeb.app/user/resetpassword', {
+            username: email.value
         }).then((response) => {
+            if (response.status === 200) {
+                alertsuccess.value = true;
+            }
+            else {
+                alertEmailReset.value = true;
+            }
             console.log(response.data);
-            alertsuccess.value = true;
             setTimeout(() => {
                 alertsuccess.value = false;
+                alertEmailReset.value = false;
             }, 5000);
         }).catch((error) => {
             console.log(error);
@@ -103,7 +117,7 @@ async function forgotPassword() {
 }
 
 onMounted(() => {
-    if(localStorage.getItem("token")){
+    if (localStorage.getItem("token")) {
         router.push({ path: '/home' })
     }
 })

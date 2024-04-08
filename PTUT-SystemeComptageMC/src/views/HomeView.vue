@@ -258,8 +258,10 @@ async function getDataFromApi() {
   firstHourFormatted = firstHourFormatted.slice(0, -9) + '.000Z';
   lastHourFormatted = lastHourFormatted.slice(0, -9) + '.000Z';
 
+  let idetab = localStorage.getItem("idetab");
+
   await axios
-    .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/2/passage/periode?dateDebut=' + firstHourFormatted + '&dateFin=' + lastHourFormatted, {
+    .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/'+idetab+'/passage/periode?dateDebut=' + firstHourFormatted + '&dateFin=' + lastHourFormatted, {
       headers: {
         Authorization: localStorage.getItem('token')
       }

@@ -19,8 +19,8 @@
                 <v-col cols="6" class="mx-5">
                     <div>
                         <p>Informations générales</p>
-                        <v-text-field class="mt-5" v-model="email" label="Email" :rules="emailrules" variant="outlined" required
-                            placeholder="Entrez votre e-mail" readonly></v-text-field>
+                        <v-text-field class="mt-5" v-model="email" label="Email" :rules="emailrules" variant="outlined"
+                            required placeholder="Entrez votre e-mail" readonly></v-text-field>
 
                         <v-text-field v-model="Role" label="Role" readonly variant="outlined"></v-text-field>
                         <v-text-field v-model="etablissement" label="Établissement" readonly
@@ -30,7 +30,7 @@
                         </v-btn>
                         <v-alert class="ma-5" v-model="alertsuccess" color="success" icon="$success"
                             title="Création du compte réussi" closable></v-alert>
-                    
+
                     </div>
                 </v-col>
             </v-row>
@@ -108,7 +108,8 @@ async function getProfileData() {
     if (user.role === 'admin') {
         etablissement.value = 'Tous les établissements'
     } else {
-        axios.get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/2', {
+        let idetabt = localStorage.getItem("idetab")
+        axios.get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/' + idetabt, {
             headers: {
                 Authorization: localStorage.getItem("token")
             },
@@ -128,10 +129,18 @@ async function getProfileData() {
 async function submit() {
     console.log(etabSelected.value)
     console.log(emailnewAccount.value)
-
+    let useretab;
+    console.log(etabSelected.value)
+    if (etabSelected.value.id !== "admin"){
+        useretab = listeEtabs.value.find(element => element.name === etabSelected.value.name)
+    }
+    else {
+        useretab = etabSelected.value
+    }
+        
     axios.post('https://ptut-ptutcomptagemaisoncampus.koyeb.app/user/register', {
         username: emailnewAccount.value,
-        role: etabSelected.value.id
+        role: useretab.id
     }, {
         headers: {
             Authorization: localStorage.getItem("token")

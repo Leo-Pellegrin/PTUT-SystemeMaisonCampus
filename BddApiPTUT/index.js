@@ -62,8 +62,8 @@ app.listen(
     () => { console.log('Serveur à lécoute') }
 )
 
-app.get("/etablissement",verifyToken, (req, res) => {
-    if(req.role !== 'admin'){
+app.get("/etablissement", verifyToken, (req, res) => {
+    if (req.role !== 'admin') {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     pool.query('SELECT * FROM ETABLISSEMENT', (error, results) => {
@@ -75,8 +75,8 @@ app.get("/etablissement",verifyToken, (req, res) => {
     })
 })
 
-app.get("/etablissement/:idEtab",verifyToken, (req, res) => {
-    if(req.role !== "admin" && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab", verifyToken, (req, res) => {
+    if (req.role !== "admin" && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab
@@ -90,7 +90,7 @@ app.get("/etablissement/:idEtab",verifyToken, (req, res) => {
 })
 
 app.get("/etablissement/:idEtab/salle", verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab;
@@ -103,8 +103,8 @@ app.get("/etablissement/:idEtab/salle", verifyToken, (req, res) => {
     })
 })
 
-app.get("/etablissement/:idEtab/passage",verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab/passage", verifyToken, (req, res) => {
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab
@@ -126,7 +126,7 @@ app.get("/etablissement/:idEtab/passage",verifyToken, (req, res) => {
 })
 
 app.get("/etablissement/:idEtab/lastpassage", verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab;
@@ -151,8 +151,8 @@ app.get("/etablissement/:idEtab/lastpassage", verifyToken, (req, res) => {
     );
 });
 
-app.get("/etablissement/:idEtab/passage/periode",verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab/passage/periode", verifyToken, (req, res) => {
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const dateDebut = req.query.dateDebut;
@@ -177,8 +177,8 @@ app.get("/etablissement/:idEtab/passage/periode",verifyToken, (req, res) => {
     })
 })
 
-app.get("/etablissement/:idEtab/salle/:idSalle/passage",verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab/salle/:idSalle/passage", verifyToken, (req, res) => {
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab;
@@ -204,8 +204,8 @@ app.get("/etablissement/:idEtab/salle/:idSalle/passage",verifyToken, (req, res) 
     );
 });
 
-app.get("/etablissement/:idEtab/salle/:idSalle/lastpassage",verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab/salle/:idSalle/lastpassage", verifyToken, (req, res) => {
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const id = req.params.idEtab;
@@ -231,8 +231,8 @@ app.get("/etablissement/:idEtab/salle/:idSalle/lastpassage",verifyToken, (req, r
     );
 });
 
-app.get("/etablissement/:idEtab/salle/:idSalle/passage/periode",verifyToken, (req, res) => {
-    if(req.role !== 'admin' && req.role !== req.params.idEtab){
+app.get("/etablissement/:idEtab/salle/:idSalle/passage/periode", verifyToken, (req, res) => {
+    if (req.role !== 'admin' && req.role !== req.params.idEtab) {
         return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
     }
     const dateDebut = req.query.dateDebut;
@@ -279,9 +279,9 @@ app.post('/createpassage', (req, res) => {
 
 //POST USERS
 
-app.post('/user/register', verifyToken,async (req, res) => {
+app.post('/user/register', verifyToken, async (req, res) => {
     try {
-        if(req.role !== 'admin'){
+        if (req.role !== 'admin') {
             return res.status(403).json({ error: "Vous n'avez pas les droits pour effectuer cette action" });
         }
         //random hash password
@@ -307,7 +307,7 @@ app.post('/user/register', verifyToken,async (req, res) => {
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error(error);
-                    return res.status(500).json({error: "Erreur dans l'envoie du mail : " + error.message });
+                    return res.status(500).json({ error: "Erreur dans l'envoie du mail : " + error.message });
                 }
             });
 
@@ -320,7 +320,7 @@ app.post('/user/register', verifyToken,async (req, res) => {
 });
 
 app.post('/user/login', async (req, res) => {
-    try{
+    try {
         pool.query('SELECT * FROM ApiUser WHERE apiUsername = $1', [req.body.username], (error, results) => {
             if (error) {
                 return res.status(500).json({ error: "Request error : " + error });
@@ -329,16 +329,16 @@ app.post('/user/login', async (req, res) => {
                 return res.status(400).json({ error: "Cannot find user" });
             }
             const user = results.rows[0];
-            bcrypt.compare(req.body.password,user.apipasswordhash , (error, result) => {
+            bcrypt.compare(req.body.password, user.apipasswordhash, (error, result) => {
                 if (error) {
                     return res.status(500).json({ error: "bcrypt compare error : " + error });
                 }
                 if (result) {
-                    if(user.passwordchanged){
+                    if (user.passwordchanged) {
                         const token = jwt.sign({ username: user.apiusername, role: user.apirole, passwordChanged: user.passwordchanged }, secretKey, { expiresIn: '1h' });
                         return res.status(200).json({ message: "Logged in", token: token });
                     }
-                    else{
+                    else {
                         return res.status(201).json({ message: "Vous devez modifier votre mot de passe pour vous connecter" });
                     }
                 }
@@ -352,14 +352,14 @@ app.post('/user/login', async (req, res) => {
 });
 
 app.post('/user/resetpassword', async (req, res) => {
-    try{
+    try {
         const newPassword = generatePassword();
         const newHashedPassword = await bcrypt.hash(newPassword, 10);
         const username = req.body.username;
         //Remplace le mot de passe en base de données par un hash d'un mot de passe random
         pool.query('UPDATE ApiUser SET apiPasswordHash = $1, passwordChanged = false WHERE apiUsername = $2', [newHashedPassword, username], (error, results) => {
             if (error) {
-                return res.status(500).json({error: error});
+                return res.status(500).json({ error: error });
             }
             //Envoie un mail avec le mot de passe
             // Configuration de l'e-mail
@@ -372,10 +372,10 @@ app.post('/user/resetpassword', async (req, res) => {
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error(error);
-                    return res.status(500).json({error: "Erreur dans l'envoi du mail : " + error.message});
+                    return res.status(500).json({ error: "Erreur dans l'envoi du mail : " + error.message });
                 }
             });
-            return res.status(200).json({message: "Mot de passe reset"});
+            return res.status(200).json({ message: "Mot de passe reset" });
         });
     }
     catch (error) {

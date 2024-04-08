@@ -106,6 +106,7 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios'
 import moment from 'moment';
 import router from '@/router';
+import { onBeforeMount } from 'vue';
 
 // Dialog variables
 const dialogSalle = ref(false);
@@ -347,7 +348,7 @@ const BarChartOptionsSalles = {
         }],
     },
     xaxis: {
-        categories: ['Bibliothèque', 'Salle 1', 'Salle 2', 'Salle 3', 'Salle 4', 'Salle 5', 'Salle 6', 'Salle 7', 'Salle 8', 'Salle Multimodale', 'Learning café'],
+        categories: [],
     },
     responsive: [
         {
@@ -520,7 +521,7 @@ const BarChartDataSalles = ref([
     {
         name: "Moyenne par salle",
         backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        data: []
     }
 ]);
 
@@ -528,7 +529,7 @@ const BarChartDataHour = ref([
     {
         name: "Moyenne par heure",
         backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        data: []
     }
 ]);
 
@@ -548,52 +549,7 @@ let AreaChartAverageData = ref([]);
 let AreaChartDataSelected = ref([])
 
 // Variables pour les salles
-const salles = ref([
-    {
-        name: 'Bibliothèque',
-        value: 'biblio',
-    },
-    {
-        name: 'Salle 1',
-        value: 'salle1',
-    },
-    {
-        name: 'Salle 2',
-        value: 'salle2',
-    },
-    {
-        name: 'Salle 3',
-        value: 'salle3',
-    },
-    {
-        name: 'Salle 4',
-        value: 'salle4',
-    },
-    {
-        name: 'Salle 5',
-        value: 'salle5',
-    },
-    {
-        name: 'Salle 6',
-        value: 'salle6',
-    },
-    {
-        name: 'Salle 7',
-        value: 'salle7',
-    },
-    {
-        name: 'Salle 8',
-        value: 'salle8',
-    },
-    {
-        name: 'Salle Multimodale',
-        value: 'salle9',
-    },
-    {
-        name: 'Learning café',
-        value: 'learningcafe',
-    }
-]);
+const salles = ref([]);
 
 // Variables pour les salles sélectionnées
 const selectedSalles = ref([]);
@@ -643,7 +599,6 @@ function selectAllItems() {
         selectedSalles.value = [];
         AreaChartDataSelected.value = [];
     }
-    console.log("selectedSalles", AreaChartDataSelected.value)
 }
 
 function selectGlobalItems() {
@@ -654,7 +609,6 @@ function selectGlobalItems() {
     }
     else {
         AreaChartDataSelected.value = [];
-        console.log("selectedSalles", AreaChartAverageData.value)
         AreaChartDataSelected.value = AreaChartAverageData.value
 
     }
@@ -683,8 +637,10 @@ async function getDataFromApi() {
         firstDateFormatted = firstDateFormatted.slice(0, -6) + '0Z';
         lastDateFormatted = lastDateFormatted.slice(0, -6) + '0Z';
 
+        let idetab = localStorage.getItem("idetab");
+
         await axios
-            .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/2/passage/periode?dateDebut=' + firstDateFormatted + '&dateFin=' + lastDateFormatted, {
+            .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/'+ idetab + '/passage/periode?dateDebut=' + firstDateFormatted + '&dateFin=' + lastDateFormatted, {
                 headers: {
                     Authorization: localStorage.getItem('token')
                 }
@@ -698,14 +654,20 @@ async function getDataFromApi() {
                 BarChartDataSalles.value = [{
                     name: "Moyenne par salle",
                     backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    data: []
                 }];
+
 
                 BarChartDataHour.value = [{
                     name: "Moyenne par heure",
                     backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    data: []
                 }];
+
+                salles.value.forEach(() => {
+                    BarChartDataSalles.value[0].data.push(0);
+                    BarChartDataHour.value[0].data.push(0);
+                })
 
                 const datasalles = getUniqueSalleNames(response.data);
 
@@ -759,7 +721,7 @@ async function getDataFromApi() {
 
                     AreaChartData.value.push(AreaData);
 
-                    addValueToBarChart(salle, somme, AreaData.data.length);
+                    addValueToBarChart(somme, AreaData.data.length);
                 })
                 if (selectedSalles.value.length > 0) {
                     // Gérer les categories pour le graph en ligne en fonction des dates
@@ -771,10 +733,9 @@ async function getDataFromApi() {
                 }
             })
             .catch((error) => {
-               console.log("error", error)
                 if (error.response) {
 
-                    if(error.response.status == 403){
+                    if (error.response.status == 403) {
                         localStorage.clear();
                         router.push({ path: '/' })
                     }
@@ -789,8 +750,10 @@ async function getDataFromApi() {
         let startOfWeek = currentMoment.startOf('isoWeek').toISOString();
         let endOfWeek = currentMoment.endOf('isoWeek').toISOString();
 
+        let idetab = localStorage.getItem("idetab");
+
         await axios
-            .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/2/passage/periode?dateDebut=' + startOfWeek + '&dateFin=' + endOfWeek, {
+            .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/'+idetab+'/passage/periode?dateDebut=' + startOfWeek + '&dateFin=' + endOfWeek, {
                 headers: {
                     Authorization: localStorage.getItem('token')
                 }
@@ -805,16 +768,19 @@ async function getDataFromApi() {
                 BarChartDataSalles.value = [{
                     name: "Moyenne par salle",
                     backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    data: []
                 }];
 
                 BarChartDataHour.value = [{
                     name: "Moyenne par heure",
                     backgroundColor: colors[Math.random() * colors.length - 1 | 0],
-                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                    data: []
                 }];
 
-
+                salles.value.forEach(() => {
+                    BarChartDataSalles.value[0].data.push(0);
+                    BarChartDataHour.value[0].data.push(0);
+                })
 
                 const datasalles = getUniqueSalleNames(response.data);
 
@@ -883,10 +849,9 @@ async function getDataFromApi() {
                 }
             })
             .catch((error) => {
-                console.log("error", error)
                 if (error.response) {
 
-                    if(error.response.status == 403){
+                    if (error.response.status == 403) {
                         localStorage.clear();
                         router.push({ path: '/' })
                     }
@@ -895,17 +860,53 @@ async function getDataFromApi() {
     }
 }
 
+const interval = ref(null);
+
 // Récupérer les données de l'API au montage
 onMounted(() => {
     if (localStorage.getItem("token")) {
+        getSallesForEtab();
         getDataFromApi();
+        interval.value = setInterval(getDataFromApi, 5000);
+    } else {
+        router.push({ path: '/' });
     }
-    else {
-        router.push({ path: '/' })
+});
+
+onBeforeMount(() => {
+    if (interval.value) {
+        console.log("clear timeout")
+        clearTimeout(interval.value);
     }
 })
 // Tableau pour les noms des mois
 const monthNames = ["Janv.", "Fév.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
+
+async function getSallesForEtab() {
+    let idetab = localStorage.getItem("idetab");
+    await axios
+        .get('https://ptut-ptutcomptagemaisoncampus.koyeb.app/etablissement/'+idetab+'/salle', {
+            headers: {
+                Authorization: localStorage.getItem('token')
+            }
+        })
+        .then((response) => {
+            const datasalles = response.data;
+            datasalles.forEach((salle) => {
+                salles.value.push({ name: salle.nomsalle })
+                BarChartOptionsSalles.xaxis.categories.push(salle.nomsalle)
+            })
+        })
+        .catch((error) => {
+            if (error.response) {
+
+                if (error.response.status == 403) {
+                    localStorage.clear();
+                    router.push({ path: '/' })
+                }
+            }
+        })
+}
 
 // Fonction pour formater la date
 function formatDateTitle(datestring) {
@@ -933,41 +934,11 @@ function getUniqueSalleNames(data) {
 }
 
 function addValueToBarChart(salle, somme, length) {
-    switch (salle) {
-        case 'Bibliothèque':
-            BarChartDataSalles.value[0].data[0] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 1':
-            BarChartDataSalles.value[0].data[1] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 2':
-            BarChartDataSalles.value[0].data[2] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 3':
-            BarChartDataSalles.value[0].data[3] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 4':
-            BarChartDataSalles.value[0].data[4] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 5':
-            BarChartDataSalles.value[0].data[5] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 6':
-            BarChartDataSalles.value[0].data[6] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 7':
-            BarChartDataSalles.value[0].data[7] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 8':
-            BarChartDataSalles.value[0].data[8] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Salle 9':
-            BarChartDataSalles.value[0].data[9] = (Math.round((somme / length) * 10 / 10))
-            break;
-        case 'Learning café':
-            BarChartDataSalles.value[0].data[10] = (Math.round((somme / length) * 10 / 10))
-            break;
-    }
+    salles.value.find((s) => {
+        if (s.name === salle) {
+            BarChartDataSalles.value[0].data[salles.value.indexOf(s)] = Math.round((somme / length) * 10) / 10;
+        }
+    })
 }
 
 function aggregateValueToChart(response) {
